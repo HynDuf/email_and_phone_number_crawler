@@ -73,10 +73,10 @@ deactivate
 The `requirements.txt` file contains the following dependencies:
 
 ```
-requests==2.28.1
-beautifulsoup4==4.11.1
-pandas==1.4.2
-openpyxl==3.0.9
+requests==2.31.0
+beautifulsoup4==4.12.2
+pandas==2.0.2
+openpyxl==3.0.10
 ```
 
 ### Project Structure
