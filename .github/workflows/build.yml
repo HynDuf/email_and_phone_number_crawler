@@ -27,8 +27,12 @@ jobs:
       run: |
         pyinstaller --onefile main.py
 
+
+    - name: Rename executable
+      run: mv dist/main dist/main.exe
+
     - name: Archive artifacts
       uses: actions/upload-artifact@v2
       with:
-        name: web_crawler.exe
-        path: dist/main
+        name: web_crawler
+        path: dist/main.exe
