@@ -1,3 +1,7 @@
 __pycache__
 *.db
 *.xlxs
+*.spec
+build
+dist
+venv

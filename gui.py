@@ -5,9 +5,8 @@ from queue import Queue, Empty
 from crawler import parallel_crawl
 from database import save_results, search_results_db
 import tkinter.filedialog as filedialog
-import pandas as pd
 from datetime import datetime
-from openpyxl import load_workbook
+from openpyxl import load_workbook, Workbook
 
 class WebCrawlerApp:
     def __init__(self, root):
@@ -25,7 +24,7 @@ class WebCrawlerApp:
         
     def setup_ui(self):
         root_style = ttk.Style()
-        root_style.configure('.', font=('Arial', 14, 'bold'))  # Set default font size
+        root_style.configure('.', font=('Arial', 13, 'bold'))  # Set default font size
         # add label in the layout
         self.style.layout('text.Horizontal.TProgressbar', 
                      [('Horizontal.Progressbar.trough',
@@ -105,7 +104,7 @@ class WebCrawlerApp:
         url_label.pack(anchor=tk.W, pady=10, padx=10)
         
         self.url_var = tk.StringVar()
-        url_entry = ttk.Entry(frame, textvariable=self.url_var, width=60, font=('Arial', 14))
+        url_entry = ttk.Entry(frame, textvariable=self.url_var, width=60, font=('Arial', 13))
         url_entry.pack(fill=tk.X, padx=10)
 
         # Create and pack the depth entry and its label
@@ -113,7 +112,7 @@ class WebCrawlerApp:
         depth_label.pack(anchor=tk.W, pady=10, padx=10)
         
         self.depth_var = tk.IntVar(value=2)
-        depth_entry = ttk.Entry(frame, textvariable=self.depth_var, width=7, font=('Arial', 14))
+        depth_entry = ttk.Entry(frame, textvariable=self.depth_var, width=7, font=('Arial', 13))
         depth_entry.pack(anchor=tk.W, padx=10)
 
         # Create and pack the start button
@@ -121,7 +120,7 @@ class WebCrawlerApp:
         self.start_button.pack(anchor=tk.W, pady=10, padx=10)
 
         # Create and pack the listbox for links
-        self.links_list = tk.Listbox(frame, width=100, height=15)
+        self.links_list = tk.Listbox(frame, width=100, height=10)
         self.links_list.pack(fill=tk.BOTH, expand=True, pady=10, padx=10)
 
         # Create and pack the progress bar
@@ -258,42 +257,51 @@ class WebCrawlerApp:
         
         # Collect phone results
         phone_results = [(self.results_phones.item(item)['values'][0], self.results_phones.item(item)['values'][1]) for item in self.results_phones.get_children()]
-        
-        # Create DataFrame for the Excel file
-        data = {
-            "URLs": urls,
-            "Emails": [email[0] for email in email_results] + [None] * (len(urls) - len(email_results)),
-            "Email Origin URLs": [email[1] for email in email_results] + [None] * (len(urls) - len(email_results)),
-            "Phone Numbers": [phone[0] for phone in phone_results] + [None] * (len(urls) - len(phone_results)),
-            "Phone Origin URLs": [phone[1] for phone in phone_results] + [None] * (len(urls) - len(phone_results)),
-        }
 
-        df = pd.DataFrame(data)
+        # Create a new workbook and select the active worksheet
+        workbook = Workbook()
+        sheet = workbook.active
+        sheet.title = "Results"
 
-        # Create metadata
+        # Write metadata
         metadata = {
             "Exported Time": export_time,
             "Root URL": start_url,
             "Max Depth": max_depth
         }
+        metadata_row = 1
+        for key, value in metadata.items():
+            sheet.cell(row=metadata_row, column=1, value=key)
+            sheet.cell(row=metadata_row, column=2, value=value)
+            metadata_row += 1
 
-        # Create Excel writer and write metadata and DataFrame to it
-        with pd.ExcelWriter(file_path, engine='openpyxl') as writer:
-            # Write metadata
-            metadata_df = pd.DataFrame(list(metadata.items()), columns=["Metadata", "Value"])
-            metadata_df.to_excel(writer, sheet_name="Results", index=False, startrow=0, header=False)
+        # Write headers for the results
+        headers = ["URLs", "Emails", "Email Origin URLs", "Phone Numbers", "Phone Origin URLs"]
+        for col_num, header in enumerate(headers, 1):
+            sheet.cell(row=metadata_row + 1, column=col_num, value=header)
+        
+        # Write the actual data
+        for row_num, url in enumerate(urls, metadata_row + 2):
+            sheet.cell(row=row_num, column=1, value=url)
+            
+        for row_num, (email, url) in enumerate(email_results, metadata_row + 2):
+            sheet.cell(row=row_num, column=2, value=email)
+            sheet.cell(row=row_num, column=3, value=url)
+        
+        for row_num, (phone, url) in enumerate(phone_results, metadata_row + 2):
+            sheet.cell(row=row_num, column=4, value=phone)
+            sheet.cell(row=row_num, column=5, value=url)
 
-            # Write the actual data
-            df.to_excel(writer, sheet_name="Results", index=False, startrow=len(metadata_df) + 2)
         # Adjust column widths
-        workbook = load_workbook(file_path)
-        sheet = workbook.active
         column_widths = [max(len(str(cell.value)) for cell in col) + 2 for col in sheet.columns]
         for i, column_width in enumerate(column_widths, 1):
             sheet.column_dimensions[chr(64 + i)].width = column_width
 
+        # Save the workbook
         workbook.save(file_path)
         messagebox.showinfo("Export to Excel", "Results exported to Excel successfully!")
+
+
     
     def search_results(self):
         keyword = self.search_text.get()
