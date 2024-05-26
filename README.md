@@ -93,3 +93,13 @@ yourproject/
 ├── requirements.txt
 └── README.md
 ```
+### Export to .exe on Windows
+
+```
+pip install pyinstaller
+```
+Then
+```
+pyinstaller --onefile main.py
+```
+You will see a `/dist/main.exe` file. Run and enjoy.
