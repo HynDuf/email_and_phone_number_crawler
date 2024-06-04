@@ -7,7 +7,7 @@ import threading
 
 # Regular expressions for emails and phone numbers
 EMAIL_REGEX = re.compile(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}')
-PHONE_REGEX = re.compile(r'^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$')
+PHONE_REGEX = re.compile(r'(?:(?:\+84|0)(?:3|5|7|8|9)(?:\d\s?){8}\b\s*)+')
 
 # Function to extract emails
 def extract_emails(text):

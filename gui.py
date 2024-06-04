@@ -24,7 +24,7 @@ class WebCrawlerApp:
         
     def setup_ui(self):
         root_style = ttk.Style()
-        root_style.configure('.', font=('Arial', 13, 'bold'))  # Set default font size
+        root_style.configure('.', font=('Arial', 12, 'bold'))  # Set default font size
         # add label in the layout
         self.style.layout('text.Horizontal.TProgressbar', 
                      [('Horizontal.Progressbar.trough',
@@ -99,66 +99,73 @@ class WebCrawlerApp:
         notification.after(2000, fade)
         
     def setup_crawler_tab(self, frame):
-        # Create and pack the URL entry and its label
-        url_label = ttk.Label(frame, text="Start URL:")
+        canvas = tk.Canvas(frame)
+        canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        scrollbar = ttk.Scrollbar(frame, orient=tk.VERTICAL, command=canvas.yview)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        scrollable_frame = ttk.Frame(canvas)
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(
+                scrollregion=canvas.bbox("all")
+            )
+        )
+
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        url_label = ttk.Label(scrollable_frame, text="Start URL:")
         url_label.pack(anchor=tk.W, pady=10, padx=10)
-        
+
         self.url_var = tk.StringVar()
-        url_entry = ttk.Entry(frame, textvariable=self.url_var, width=60, font=('Arial', 13))
+        url_entry = ttk.Entry(scrollable_frame, textvariable=self.url_var, width=60, font=('Arial', 12))
         url_entry.pack(fill=tk.X, padx=10)
 
-        # Create and pack the depth entry and its label
-        depth_label = ttk.Label(frame, text="Max Depth:")
+        depth_label = ttk.Label(scrollable_frame, text="Max Depth:")
         depth_label.pack(anchor=tk.W, pady=10, padx=10)
-        
+
         self.depth_var = tk.IntVar(value=2)
-        depth_entry = ttk.Entry(frame, textvariable=self.depth_var, width=7, font=('Arial', 13))
+        depth_entry = ttk.Entry(scrollable_frame, textvariable=self.depth_var, width=7, font=('Arial', 12))
         depth_entry.pack(anchor=tk.W, padx=10)
 
-        # Create and pack the start button
-        self.start_button = ttk.Button(frame, text="Start", command=self.start_crawl_thread, style='Large.TButton')
+        self.start_button = ttk.Button(scrollable_frame, text="Start", command=self.start_crawl_thread, style='Large.TButton')
         self.start_button.pack(anchor=tk.W, pady=10, padx=10)
 
-        # Create and pack the listbox for links
-        self.links_list = tk.Listbox(frame, width=100, height=10)
+        self.links_list = tk.Listbox(scrollable_frame, width=100, height=7)
         self.links_list.pack(fill=tk.BOTH, expand=True, pady=10, padx=10)
 
-        # Create and pack the progress bar
-        self.progress = ttk.Progressbar(frame, style='text.Horizontal.TProgressbar', orient="horizontal", variable=self.progress_var)
+        self.progress = ttk.Progressbar(scrollable_frame, style='text.Horizontal.TProgressbar', orient="horizontal", variable=self.progress_var)
         self.progress.pack(fill=tk.X, pady=10, padx=10)
-        
-        # Create and pack the email results frame and treeview
-        self.email_frame = ttk.LabelFrame(frame, text="Email Results")
+
+        self.email_frame = ttk.LabelFrame(scrollable_frame, text="Email Results")
         self.email_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
-        
-        self.results_emails = ttk.Treeview(self.email_frame, columns=("Email", "URL"), show="headings", height=8)
+
+        self.results_emails = ttk.Treeview(self.email_frame, columns=("Email", "URL"), show="headings", height=6)
         self.results_emails.heading("Email", text="Email")
         self.results_emails.heading("URL", text="URL")
         self.results_emails.pack(fill=tk.BOTH, expand=True)
         self.results_emails.bind("<Button-3>", lambda event: self.treeview_right_click(self.results_emails, event))
 
-        # Create and pack the phone results frame and treeview
-        self.phone_frame = ttk.LabelFrame(frame, text="Phone Results")
+        self.phone_frame = ttk.LabelFrame(scrollable_frame, text="Phone Results")
         self.phone_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
-        
-        self.results_phones = ttk.Treeview(self.phone_frame, columns=("Phone Number", "URL"), show="headings", height=8)
+
+        self.results_phones = ttk.Treeview(self.phone_frame, columns=("Phone Number", "URL"), show="headings", height=6)
         self.results_phones.heading("Phone Number", text="Phone Number")
         self.results_phones.heading("URL", text="URL")
         self.results_phones.pack(fill=tk.BOTH, expand=True)
         self.results_phones.bind("<Button-3>", lambda event: self.treeview_right_click(self.results_phones, event))
 
-        # Create and pack the frame for save and export buttons
-        button_frame = ttk.Frame(frame)
+        button_frame = ttk.Frame(scrollable_frame)
         button_frame.pack(fill=tk.X, pady=10)
 
-        # Create and pack the save button
         self.save_button = ttk.Button(button_frame, text="Save results to database", command=self.save_results, style='Large.TButton')
         self.save_button.grid(row=0, column=0, padx=5, sticky=tk.W)
 
-        # Create and pack the export to Excel button
         self.export_button = ttk.Button(button_frame, text="Export results to Excel", command=self.export_to_excel, style='Large.TButton')
         self.export_button.grid(row=0, column=1, padx=5, sticky=tk.E)
-        
+
         self.save_button.config(state=tk.DISABLED)
         self.export_button.config(state=tk.DISABLED)
 
