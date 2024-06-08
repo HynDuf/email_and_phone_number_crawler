@@ -103,3 +103,13 @@ Then
 pyinstaller --onefile main.py
 ```
 You will see a `/dist/main.exe` file. Run and enjoy.
+
+### Docker
+```
+docker build -t my-python-gui-app .
+```
+
+Unix
+```
+docker run -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix my-python-gui-app
+```
