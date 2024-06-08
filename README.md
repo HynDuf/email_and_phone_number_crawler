@@ -109,7 +109,10 @@ You will see a `/dist/main.exe` file. Run and enjoy.
 docker build -t my-python-gui-app .
 ```
 
-Unix
+Run the app
 ```
 docker run -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix my-python-gui-app
 ```
+
+The "Export to Excel" functionality will export file to the docker directory.
+- On Windows, the path looks like this: `\\wsl.localhost\docker-desktop-data\data\docker\overlay2\4aaf2f0d5484890425d98f17a2790072694941acc07f9f154a33bf08f1fcedce\diff\usr\src\app`
